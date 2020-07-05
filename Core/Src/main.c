@@ -20,11 +20,17 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-
+#include "Gpio.h"
+#include "Rcc.h"
+#include "Common.h"
+#include "BaseAddress.h"
+#include "Tcb.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-ThreadContext * tc1;
-Tcb thread1;
+ Tcb * tc2;
+ Tcb * tcMain;
+ Tcb * tc1;
+ volatile ThreadContext * thread1;
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -46,6 +52,8 @@ Tcb thread1;
 /* USER CODE BEGIN PV */
 int add2Integers(int a,int b);
 void switchThreadContext();
+void blinkSlowLed();
+void blinkFastLed();
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -89,17 +97,27 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   /* USER CODE BEGIN 2 */
-  baseaddress = malloc(1024);
-  thread1->stackPtr = (baseaddress + 1024 - sizeof(ThreadContext))& 0xFFFFFFF8;
-  tc1->
-  switchThreadContext();
+  __disable_irq();
+  enableGpioG();
+  gpioSetMode(gpioG, PIN_13, GPIO_OUT);
+  gpioSetPinSpeed(gpioG,PIN_13,HIGH_SPEED);
+  gpioSetMode(gpioG, PIN_14, GPIO_OUT);
+  gpioSetPinSpeed(gpioG,PIN_14,HIGH_SPEED);
 
+  //switchThreadContext();
+ // tcMain = tcbCreateMain();
+  tc1 = tcbCreate(1024 ,blinkSlowLed );
+  thread1 =(ThreadContext *)  tc1->stackPtr;
+  tc2 = tcbCreate(1024 ,blinkSlowLed );
+  __enable_irq();
   /*
   //wk2
   volatile int val = add2Integers(45,10);
   volatile int val1 = val;
   val1 += val;
   */
+
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -107,7 +125,7 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-
+	  blinkFastLed();
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -165,7 +183,22 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-
+void blinkFastLed(){
+	while(1){
+		gpioToggleBit(gpioG, PIN_13 );
+		HAL_Delay(300);
+		gpioToggleBit(gpioG, PIN_13 );
+		HAL_Delay(300);
+	}
+}
+void blinkSlowLed(){
+	while(1){
+		gpioToggleBit(gpioG, PIN_14 );
+		HAL_Delay(500);
+		gpioToggleBit(gpioG, PIN_14 );
+		HAL_Delay(500);
+	}
+}
 /* USER CODE END 4 */
 
 /**

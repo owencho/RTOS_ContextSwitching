@@ -32,7 +32,7 @@
 
 .global  g_pfnVectors
 .global  Default_Handler
-.global  sysTickIsr
+.global  contextSwitchingISR
 .global add2Integers
 .global switchThreadContext
 /* start address for the initialization values of the .data section. 
@@ -60,30 +60,34 @@ defined in linker script */
     .type  add2Integers, %function
     .type  dummy, %function
     .type  switchThreadContext, %function
-    .type  sysTickIsr, %function
+    .type  contextSwitchingISR, %function
 //week 3
 switchThreadContext:
 	ldr r0 ,=0x00ffff00 // load 0x00ffff00 into r0
-	ldr r1 ,=0x11111111 // load 0x00ffff00 into r0
-	ldr r2 ,=0x22222222 // load 0x00ffff00 into r0
-	ldr r3 ,=0x33333333 // load 0x00ffff00 into r0
-	ldr r12 ,=0xcccccccc // load 0x00ffff00 into r0
-	push {r0} // to show is there any padding to become odd
+	ldr r1 ,=0x11111111 // load 0x11111111 into r1
+	ldr r2 ,=0x22222222 // load 0x22222222 into r2
+	ldr r3 ,=0x33333333 // load 0x33333333 into r3
+	ldr r12 ,=0xcccccccc // load 0xcccccccc into r12
+	//push {r0} // to show is there any padding to become odd
 	//push {r1}
 
-waitHere4Interrupt:
+//waitHere4Interrupt:
 
-	bal waitHere4Interrupt //loop this function
+	//bal waitHere4Interrupt //loop this function
 
-sysTickIsr:
-	mov r0,r0   //dummy remove this line
+contextSwitchingISR:
 	push {lr}
-	bl SysTick_Handler
-
+	//bl SysTick_Handler
 	// Do thread context switching
-	//..
-	pop {lr}
-	bx lr
+	stmdb sp!,{r4-r11} //push
+	//ldr r0,=tcMain //load tcMain into r0
+	ldr r2,=thread1	  //r2 has address of the pointer
+	ldr r1,[r2]  //r1 has the value address of the pointer
+	mov r0,sp      //load sp value into r0
+	mov sp,r1	  //load r1 value into sp
+	ldmia sp!,{r4-r11} //pop r4-r11
+	//pop {lr} //pop lr
+	bx lr   // return to lr address
 
 //Week 2
 add2Integers:
@@ -212,7 +216,7 @@ g_pfnVectors:
   .word  DebugMon_Handler
   .word  0
   .word  PendSV_Handler
-  .word  sysTickIsr
+  .word  contextSwitchingISR
   
   /* External Interrupts */
   .word     WWDG_IRQHandler                   /* Window WatchDog              */                                        
