@@ -75,6 +75,27 @@ switchThreadContext:
 
 	//bal waitHere4Interrupt //loop this function
 
+//CS with linked List
+
+contextSwitchingISR:
+	//bl SysTick_Handler
+	// Do thread context switching
+	push {lr}
+	bl 		deQueueEnqueue
+	pop {lr} //pop lr
+
+	stmdb sp!,{r4-r11} //push
+	//ldr r0,=tcMain //load tcMain into r0
+	ldr r2,=deQueueThread	  //r2 has address of the pointer
+	ldr r1,[r2]  //r1 has the value address of the pointer
+	mov r0,sp      //load sp value into r0
+	mov sp,r1	  //load r1 value into sp
+	ldmia sp!,{r4-r11} //pop r4-r11
+
+	bx lr   // return to lr address
+
+//CS without linked List
+/*
 contextSwitchingISR:
 	push {lr}
 	//bl SysTick_Handler
@@ -88,7 +109,7 @@ contextSwitchingISR:
 	ldmia sp!,{r4-r11} //pop r4-r11
 	//pop {lr} //pop lr
 	bx lr   // return to lr address
-
+*/
 //Week 2
 add2Integers:
 	// if s is added on the operand

@@ -24,13 +24,17 @@
 #include "Rcc.h"
 #include "Common.h"
 #include "BaseAddress.h"
+#include "List.h"
 #include "Tcb.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
  Tcb * tc2;
  Tcb * tcMain;
  Tcb * tc1;
+ Tcb * deQueueTcb;
+ List tcbList;
  volatile ThreadContext * thread1;
+ volatile ThreadContext * deQueueThread;
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -105,10 +109,13 @@ int main(void)
   gpioSetPinSpeed(gpioG,PIN_14,HIGH_SPEED);
 
   //switchThreadContext();
- // tcMain = tcbCreateMain();
+//  tcMain = tcbCreateMain();
   tc1 = tcbCreate(1024 ,blinkSlowLed );
+  tc2 = tcbCreate(1024 ,blinkFastLed );
   thread1 =(ThreadContext *)  tc1->stackPtr;
-  tc2 = tcbCreate(1024 ,blinkSlowLed );
+  //tc2 = tcbCreate(1024 ,blinkSlowLed );
+  listAddItemToTail(&tcbList,(ListItem*)tc1);
+  listAddItemToTail(&tcbList,(ListItem*)tc2);
   __enable_irq();
   /*
   //wk2
@@ -198,6 +205,12 @@ void blinkSlowLed(){
 		gpioToggleBit(gpioG, PIN_14 );
 		HAL_Delay(500);
 	}
+}
+
+void deQueueEnqueue(){
+	deQueueTcb =(Tcb *) deleteHeadListItem(&tcbList);
+	deQueueThread = (ThreadContext *)deQueueTcb->stackPtr;
+	listAddItemToTail(&tcbList,(ListItem*)deQueueTcb);
 }
 /* USER CODE END 4 */
 
