@@ -6,7 +6,7 @@ Tcb * tcbCreateMain(void ){
 	Tcb * tcb;
 	tcb = malloc(sizeof(Tcb));
 	tcb->stackBaseAddr =  0;
-	tcb->stackPtr =(int8_t*) __get_MSP();
+	tcb->stackPtr = 0 ;
 	return tcb;
 }
 
@@ -17,8 +17,7 @@ Tcb * tcbCreate(int mallocNum ,void (*Task)(void) ){
 	tcb = malloc(sizeof(Tcb));
 	baseaddress = malloc(mallocNum);
 	tcb->stackBaseAddr = baseaddress;
-	tcb->stackPtr = (baseaddress + mallocNum - sizeof(ThreadContext));
-	//& 0xFFFFFFF8
+	tcb->stackPtr = (int8_t*)(((uint32_t)baseaddress + mallocNum - sizeof(ThreadContext))& 0xFFFFFFF8);
 	tc =(ThreadContext *) tcb->stackPtr;
 	tc-> R4 = 0x14444444;
 	tc-> R5 = 0x15555555;
@@ -34,7 +33,8 @@ Tcb * tcbCreate(int mallocNum ,void (*Task)(void) ){
 	tc-> R3 = 0x17777777;
 	tc-> R12 = 0x1CCCCCC;
 	tc-> returnAddress = (uint32_t)Task;
-	tc-> Lr = 0xFFFFF9;
+	tc-> excReturn = 0xFFFFFFF9;
+	tc-> Lr = 0xFFFFFFF9;
 	tc-> xpsr = 0x01000000;
 	return tcb;
 }

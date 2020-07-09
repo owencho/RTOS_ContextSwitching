@@ -78,24 +78,27 @@ switchThreadContext:
 //CS with linked List
 
 contextSwitchingISR:
-	//bl SysTick_Handler
-	// Do thread context switching
-	push {lr}
+	stmdb sp!,{r4-r11,lr} //push
 	bl 		deQueueEnqueue
-	pop {lr} //pop lr
-
-	stmdb sp!,{r4-r11} //push
-	//ldr r0,=tcMain //load tcMain into r0
-	ldr r2,=deQueueThread	  //r2 has address of the pointer
-	ldr r1,[r2]  //r1 has the value address of the pointer
-	mov r0,sp      //load sp value into r0
-	mov sp,r1	  //load r1 value into sp
-	ldmia sp!,{r4-r11} //pop r4-r11
-
+	// load sp into deQueueTCB->stackPTR
+	ldr r0,=deQueueTcb
+	ldr r1 , [r0]
+	str sp ,[r1,#4]
+	//mov r1 ,sp
+	//load sp in tcb into pc sp
+	bl 		peepHeadTcb
+	ldr r0,=nextTcb      //r0 points to nextTcb address
+	ldr r1 , [r0]       // r1 has address of nextTcb
+	ldr r2 , [r1,#4]	// r1 has address in nextTcb
+	mov sp ,r2
+	//pop r4-r11 and lr
+	ldmia sp!,{r4-r11,lr}
 	bx lr   // return to lr address
 
 //CS without linked List
 /*
+	mov r0,sp      //load sp value into r0
+	mov sp,r1	  //load r1 value into sp
 contextSwitchingISR:
 	push {lr}
 	//bl SysTick_Handler
@@ -237,7 +240,7 @@ g_pfnVectors:
   .word  DebugMon_Handler
   .word  0
   .word  PendSV_Handler
-  .word  contextSwitchingISR
+  .word  SysTick_Handler
   
   /* External Interrupts */
   .word     WWDG_IRQHandler                   /* Window WatchDog              */                                        
