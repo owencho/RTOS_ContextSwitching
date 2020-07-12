@@ -89,7 +89,7 @@ contextSwitchingISR:
 	bl 		peepHeadTcb
 	ldr r0,=nextTcb      //r0 points to nextTcb address
 	ldr r1 , [r0]       // r1 has address of nextTcb
-	ldr r2 , [r1,#4]	// r1 has address in nextTcb
+	ldr r2 , [r1,#4]	// r2 has address in nextTcb+4
 	mov sp ,r2
 	//pop r4-r11 and lr
 	ldmia sp!,{r4-r11,lr}
