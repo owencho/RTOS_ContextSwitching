@@ -26,6 +26,10 @@
 #include "BaseAddress.h"
 #include "List.h"
 #include "Tcb.h"
+
+#include "ThreadContext.h"
+#include "TimerEvent.h"
+
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 volatile Tcb * tc2;
@@ -33,7 +37,6 @@ volatile Tcb * tcMain;
 volatile Tcb * tc1;
 volatile Tcb * deQueueTcb;
 volatile Tcb * nextTcb;
-List tcbList;
 volatile ThreadContext * thread1;
 volatile ThreadContext * deQueueThread;
 /* USER CODE END Includes */
@@ -57,6 +60,7 @@ volatile ThreadContext * deQueueThread;
 /* USER CODE BEGIN PV */
 int add2Integers(int a,int b);
 void switchThreadContext();
+void pushIntoTimerQueue();
 void blinkSlowLed();
 void blinkFastLed();
 /* USER CODE END PV */
@@ -113,8 +117,8 @@ int main(void)
   tcMain = tcbCreateMain();
   tc1 = tcbCreate(1024 ,blinkSlowLed );
   tc2 = tcbCreate(1024 ,blinkFastLed );
-  listAddItemToTail(&tcbList,(ListItem*)tcMain);
-  listAddItemToTail(&tcbList,(ListItem*)tc1);
+  listAddItemToTail((List*)&readyQueue,(ListItem*)tcMain);
+  listAddItemToTail((List*)&readyQueue,(ListItem*)tc1);
   __enable_irq();
   /*
   //wk2
@@ -192,28 +196,33 @@ static void MX_GPIO_Init(void)
 void blinkFastLed(){
 	while(1){
 		gpioToggleBit(gpioG, PIN_13 );
-		HAL_Delay(100);
-		gpioToggleBit(gpioG, PIN_13 );
-		HAL_Delay(100);
+		//HAL_Delay(100);
+		//gpioToggleBit(gpioG, PIN_13 );
+		//HAL_Delay(100);
 	}
 }
 void blinkSlowLed(){
 	while(1){
 		gpioToggleBit(gpioG, PIN_14 );
-		HAL_Delay(200);
-		gpioToggleBit(gpioG, PIN_14 );
-		HAL_Delay(200);
+		//HAL_Delay(200);
+		//gpioToggleBit(gpioG, PIN_14 );
+		//HAL_Delay(200);
 	}
 }
 
 void deQueueEnqueue(){
-	deQueueTcb =(Tcb *) deleteHeadListItem(&tcbList);
-	listAddItemToTail(&tcbList,(ListItem*)deQueueTcb);
+	deQueueTcb =(Tcb *) deleteHeadListItem((List*)&readyQueue);
+	//listAddItemToTail(&readyQueue,(ListItem*)deQueueTcb);
+	//timerEventRequest(&timerEventQueue,(TimerEvent*)deQueueTcb,100);
+}
+
+void pushIntoTimerQueue(){
+	timerEventRequest(&timerEventQueue,(TimerEvent*)deQueueTcb,1);
 }
 
 void peepHeadTcb(){
-	resetCurrentListItem(&tcbList);
-	nextTcb =(Tcb *) getCurrentListItem(&tcbList);
+	resetCurrentListItem((List*)&readyQueue);
+	nextTcb =(Tcb *) getCurrentListItem((List*)&readyQueue);
 }
 /* USER CODE END 4 */
 

@@ -29,10 +29,12 @@ extern "C" {
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_hal.h"
-
+#include "TcbQueue.h"
+#include "TimerEventQueue.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+TimerEventQueue timerEventQueue;
+TcbQueue readyQueue;
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/

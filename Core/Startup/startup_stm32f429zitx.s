@@ -83,13 +83,14 @@ contextSwitchingISR:
 	// load sp into deQueueTCB->stackPTR
 	ldr r0,=deQueueTcb
 	ldr r1 , [r0]
-	str sp ,[r1,#4]
+	str sp ,[r1,#8]
 	//mov r1 ,sp
+	bl pushIntoTimerQueue
 	//load sp in tcb into pc sp
 	bl 		peepHeadTcb
 	ldr r0,=nextTcb      //r0 points to nextTcb address
 	ldr r1 , [r0]       // r1 has address of nextTcb
-	ldr r2 , [r1,#4]	// r2 has address in nextTcb+4
+	ldr r2 , [r1,#8]	// r2 has address in nextTcb+4
 	mov sp ,r2
 	//pop r4-r11 and lr
 	ldmia sp!,{r4-r11,lr}
