@@ -195,7 +195,9 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 void blinkFastLed(){
 	while(1){
-		gpioToggleBit(gpioG, PIN_13 );
+		gpioWriteBit(gpioG , PIN_14 , 1);
+		gpioWriteBit(gpioG , PIN_13 , 0);
+		//gpioToggleBit(gpioG, PIN_13 );
 		//HAL_Delay(100);
 		//gpioToggleBit(gpioG, PIN_13 );
 		//HAL_Delay(100);
@@ -203,7 +205,9 @@ void blinkFastLed(){
 }
 void blinkSlowLed(){
 	while(1){
-		gpioToggleBit(gpioG, PIN_14 );
+		gpioWriteBit(gpioG , PIN_14 , 0);
+		gpioWriteBit(gpioG , PIN_13 , 1);
+		//gpioToggleBit(gpioG, PIN_14 );
 		//HAL_Delay(200);
 		//gpioToggleBit(gpioG, PIN_14 );
 		//HAL_Delay(200);
@@ -216,8 +220,13 @@ void deQueueEnqueue(){
 	//timerEventRequest(&timerEventQueue,(TimerEvent*)deQueueTcb,100);
 }
 
+void resetComeFromTimerEvent(){
+	nextTcb->comeFromTimerEvent = 0;
+}
+
 void pushIntoTimerQueue(){
-	timerEventRequest(&timerEventQueue,(TimerEvent*)deQueueTcb,1);
+	deQueueTcb->comeFromTimerEvent = 1;
+	timerEventRequest(&timerEventQueue,(TimerEvent*)deQueueTcb,200);
 }
 
 void peepHeadTcb(){

@@ -7,6 +7,7 @@ Tcb * tcbCreateMain(void ){
 	tcb = malloc(sizeof(Tcb));
 	tcb->stackBaseAddr =  0;
 	tcb->stackPtr = 0 ;
+	tcb->comeFromTimerEvent = 0 ;
 	return tcb;
 }
 
@@ -36,5 +37,6 @@ Tcb * tcbCreate(int mallocNum ,void (*Task)(void) ){
 	tc-> excReturn = 0xFFFFFFF9;
 	tc-> Lr = 0xFFFFFFF9;
 	tc-> xpsr = 0x01000000;
+	tcb->comeFromTimerEvent = 0 ;
 	return tcb;
 }

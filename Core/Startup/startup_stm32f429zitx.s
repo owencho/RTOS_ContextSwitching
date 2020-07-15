@@ -76,7 +76,52 @@ switchThreadContext:
 	//bal waitHere4Interrupt //loop this function
 
 //CS with linked List
+checkReadyQueue:
+	ldr r0,=readyQueue   //r0 has address of readyQueue
+	ldr r2 , [r0,#8]	// r2 has value in readyQueue+8 means is the count of ready queue
+	cmp r2 , #0        //compare is readyqueue zero
+	beq returnToOriginal //branch to return IF COUNT IS ZERO
+	bx lr
 
+contextSwitchingISR:
+	stmdb sp!,{r4-r11,lr} //push
+	bl 		checkReadyQueue //check is the ready queue null if null will jump to returnToOriginal
+
+	//checkIsHeadOfReadyQueueComeFromTimerQueue
+	bl 		peepHeadTcb   // check currentItem
+	ldr r0,=nextTcb      //r0 points to address of nextTcb
+	ldr r1 , [r0]       // r1 has address value of nextTcb
+	ldr r2 , [r1,#20]	// r2 has value of address in nextTcb+20
+	cmp r2 , #1        //compare if the Tcb came from TimerQueue
+	beq peepHeadForNextHeadItem //branch to Tcb if item came from TimerQueue
+
+	//Dequeue from ready queue and load current stack pointer into Tcb
+	//and Enqueue into timerQueue
+	bl 		deQueueEnqueue  // deQueue from ready Queue head
+	// load sp into deQueueTCB->stackPTR
+	ldr r0,=deQueueTcb
+	ldr r1 , [r0]
+	str sp ,[r1,#8]
+	// add dequeue Tcb into timerQueue
+	bl pushIntoTimerQueue
+	bl checkReadyQueue //check is the ready queue if not 0 COUNT then continue
+
+peepHeadForNextHeadItem:
+	bl 		peepHeadTcb
+	bl 		resetComeFromTimerEvent
+	//load sp in tcb into pc sp
+	//must do like this for pointer because nextTcb is a pointer
+	ldr r0,=nextTcb      //r0 points to address of nextTcb
+	ldr r1 , [r0]       // r1 has address value of nextTcb
+	ldr r2 , [r1,#8]	// r2 has address in nextTcb+8
+	mov sp ,r2			// move value of r2 into sp
+
+returnToOriginal:
+	//pop r4-r11 and lr
+	ldmia sp!,{r4-r11,lr}
+	bx lr   // return to lr address
+
+/*
 contextSwitchingISR:
 	stmdb sp!,{r4-r11,lr} //push
 	bl 		deQueueEnqueue
@@ -95,7 +140,7 @@ contextSwitchingISR:
 	//pop r4-r11 and lr
 	ldmia sp!,{r4-r11,lr}
 	bx lr   // return to lr address
-
+*/
 //CS without linked List
 /*
 	mov r0,sp      //load sp value into r0

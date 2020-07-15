@@ -18,6 +18,7 @@ struct TimerEvent {
 		int8_t * stackPtr;
 		int8_t * stackBaseAddr;
 		ThreadState threadState;
+		void * data;
 };
 
 #endif /* INC_TIMEREVENT_H_ */

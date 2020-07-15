@@ -41,6 +41,7 @@ struct Tcb {
 	int8_t * stackPtr;
 	int8_t * stackBaseAddr;
 	ThreadState threadState;
+	int comeFromTimerEvent;
 };
 
 #endif /* INC_THREADCONTEXT_H_ */
