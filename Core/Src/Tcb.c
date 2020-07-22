@@ -7,18 +7,19 @@ Tcb * tcbCreateMain(void ){
 	tcb = malloc(sizeof(Tcb));
 	tcb->stackBaseAddr =  0;
 	tcb->stackPtr = 0 ;
-	tcb->comeFromTimerEvent = 0 ;
+	tcb->name = "Main stack";
 	return tcb;
 }
 
-Tcb * tcbCreate(int mallocNum ,void (*Task)(void) ){
+Tcb * tcbCreate(int mallocNum ,void (*Task)(void),char * name ){
 	Tcb * tcb;
 	ThreadContext * tc;
 	int8_t * baseaddress;
 	tcb = malloc(sizeof(Tcb));
 	baseaddress = malloc(mallocNum);
 	tcb->stackBaseAddr = baseaddress;
-	tcb->stackPtr = (int8_t*)(((uint32_t)baseaddress + mallocNum - sizeof(ThreadContext))& 0xFFFFFFF8);
+	tcb->stackPtr = (int8_t*)((((uint32_t)baseaddress + mallocNum - sizeof(ThreadContext))& 0xFFFFFFF8)-4);
+	tcb->name = name;
 	tc =(ThreadContext *) tcb->stackPtr;
 	tc-> R4 = 0x14444444;
 	tc-> R5 = 0x15555555;
@@ -37,6 +38,5 @@ Tcb * tcbCreate(int mallocNum ,void (*Task)(void) ){
 	tc-> excReturn = 0xFFFFFFF9;
 	tc-> Lr = 0xFFFFFFF9;
 	tc-> xpsr = 0x01000000;
-	tcb->comeFromTimerEvent = 0 ;
 	return tcb;
 }

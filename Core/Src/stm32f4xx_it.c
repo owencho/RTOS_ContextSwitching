@@ -23,6 +23,8 @@
 #include "Scb.h"
 #include "stm32f4xx_it.h"
 #include "TimerEventISR.h"
+#include "TimerEventQueue.h"
+#include "Kernel.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 /* USER CODE END Includes */
@@ -171,7 +173,7 @@ void DebugMon_Handler(void)
 void PendSV_Handler(void)
 {
   /* USER CODE BEGIN PendSV_IRQn 0 */
-		contextSwitchingISR();
+		contextSwitchingISR((QueueTask)timerEventEnqueue);
   /* USER CODE END PendSV_IRQn 0 */
   /* USER CODE BEGIN PendSV_IRQn 1 */
 

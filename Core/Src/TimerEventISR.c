@@ -9,9 +9,10 @@
 #include "EventCompare.h"
 #include "Irq.h"
 #include "TimerEventISR.h"
-List  timerEventQueueList;
+
 TimerEvent * timerEventItem;
 TimerEvent * currentTimerEventItem;
+extern int isEvent ;
 int totalTimeDelay,relativeTick;
 
 void timerEventISR(TcbQueue * readyQueue,TimerEventQueue *timerEventQueue){
@@ -21,11 +22,13 @@ void timerEventISR(TcbQueue * readyQueue,TimerEventQueue *timerEventQueue){
 	    	resetCurrentListItem((List*)timerEventQueue);
 	    	currentTimerEventItem=(TimerEvent*)getCurrentListItem((List*)timerEventQueue);
       	if(currentTimerEventItem->time == timerEventQueueGetRelativeTick(timerEventQueue)){
-	      		currentTimerEventItem = timerEventDequeue(timerEventQueue);
-	      		listAddItemToTail((List*)readyQueue,(ListItem*)currentTimerEventItem);
+ 	      		currentTimerEventItem = timerEventDequeue(timerEventQueue);
+	      		listAddItemToTail((List*)readyQueue,(ListItem*)(currentTimerEventItem->data));
 	      		//eventEnqueue(eventQueue,(Event*)currentTimerEventItem);
 				resetTick(timerEventQueue);
-				checkAndDequeueIfNextEventTimerIsZero(readyQueue,timerEventQueue);
+				isEvent = 1;
+				__asm("sev");
+     			checkAndDequeueIfNextEventTimerIsZero(readyQueue,timerEventQueue);
      		}
     }
 	 enableIRQ();
@@ -40,7 +43,7 @@ void checkAndDequeueIfNextEventTimerIsZero(TcbQueue * readyQueue,TimerEventQueue
 						nextTimerEventItem =timerEventDequeue(timerEventQueue);
 						//nextTimerEventItem->type = TIMEOUT_EVENT;
 						//eventEnqueue(eventQueue,(Event*)nextTimerEventItem);
-						listAddItemToTail((List*)readyQueue,(ListItem*)nextTimerEventItem);
+						listAddItemToTail((List*)readyQueue,(ListItem*)(nextTimerEventItem->data));
 				}
 				nextTimerEventItem=timerEventQueueGetCurrentEvent(timerEventQueue);
 				if(nextTimerEventItem == NULL)
@@ -48,5 +51,5 @@ void checkAndDequeueIfNextEventTimerIsZero(TcbQueue * readyQueue,TimerEventQueue
 				else if (nextTimerEventItem-> time != 0)
 						break;
 		}
-		resetCurrentListItem(&timerEventQueueList);
+		resetCurrentListItem((List*)timerEventQueue);
 }

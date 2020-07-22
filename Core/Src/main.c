@@ -26,17 +26,17 @@
 #include "BaseAddress.h"
 #include "List.h"
 #include "Tcb.h"
-
+#include "Scb.h"
 #include "ThreadContext.h"
 #include "TimerEvent.h"
-
+#include "Kernel.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 volatile Tcb * tc2;
 volatile Tcb * tcMain;
 volatile Tcb * tc1;
-volatile Tcb * deQueueTcb;
-volatile Tcb * nextTcb;
+TimerEvent  evt ,evt2;
+
 volatile ThreadContext * thread1;
 volatile ThreadContext * deQueueThread;
 /* USER CODE END Includes */
@@ -115,8 +115,8 @@ int main(void)
 
   //switchThreadContext();
   tcMain = tcbCreateMain();
-  tc1 = tcbCreate(1024 ,blinkSlowLed );
-  tc2 = tcbCreate(1024 ,blinkFastLed );
+  tc1 = tcbCreate(1024 ,blinkSlowLed ,"tc1");
+  tc2 = tcbCreate(1024 ,blinkFastLed ,"tc2");
   listAddItemToTail((List*)&readyQueue,(ListItem*)tcMain);
   listAddItemToTail((List*)&readyQueue,(ListItem*)tc1);
   __enable_irq();
@@ -195,44 +195,22 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 void blinkFastLed(){
 	while(1){
-		gpioWriteBit(gpioG , PIN_14 , 1);
-		gpioWriteBit(gpioG , PIN_13 , 0);
-		//gpioToggleBit(gpioG, PIN_13 );
-		//HAL_Delay(100);
-		//gpioToggleBit(gpioG, PIN_13 );
-		//HAL_Delay(100);
+		gpioToggleBit(gpioG, PIN_13 );
+		kernelSleep(&evt,300);
+		gpioToggleBit(gpioG, PIN_13 );
+		kernelSleep(&evt,300);
 	}
 }
 void blinkSlowLed(){
 	while(1){
-		gpioWriteBit(gpioG , PIN_14 , 0);
-		gpioWriteBit(gpioG , PIN_13 , 1);
-		//gpioToggleBit(gpioG, PIN_14 );
-		//HAL_Delay(200);
-		//gpioToggleBit(gpioG, PIN_14 );
-		//HAL_Delay(200);
+		gpioToggleBit(gpioG, PIN_14 );
+		kernelSleep(&evt2,300);
+		gpioToggleBit(gpioG, PIN_14 );
+		kernelSleep(&evt2,300);
 	}
 }
 
-void deQueueEnqueue(){
-	deQueueTcb =(Tcb *) deleteHeadListItem((List*)&readyQueue);
-	//listAddItemToTail(&readyQueue,(ListItem*)deQueueTcb);
-	//timerEventRequest(&timerEventQueue,(TimerEvent*)deQueueTcb,100);
-}
 
-void resetComeFromTimerEvent(){
-	nextTcb->comeFromTimerEvent = 0;
-}
-
-void pushIntoTimerQueue(){
-	deQueueTcb->comeFromTimerEvent = 1;
-	timerEventRequest(&timerEventQueue,(TimerEvent*)deQueueTcb,200);
-}
-
-void peepHeadTcb(){
-	resetCurrentListItem((List*)&readyQueue);
-	nextTcb =(Tcb *) getCurrentListItem((List*)&readyQueue);
-}
 /* USER CODE END 4 */
 
 /**

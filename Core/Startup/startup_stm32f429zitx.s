@@ -61,6 +61,7 @@ defined in linker script */
     .type  dummy, %function
     .type  switchThreadContext, %function
     .type  contextSwitchingISR, %function
+
 //week 3
 switchThreadContext:
 	ldr r0 ,=0x00ffff00 // load 0x00ffff00 into r0
@@ -74,7 +75,8 @@ switchThreadContext:
 //waitHere4Interrupt:
 
 	//bal waitHere4Interrupt //loop this function
-
+/*
+//week5
 //CS with linked List
 checkReadyQueue:
 	ldr r0,=readyQueue   //r0 has address of readyQueue
@@ -82,7 +84,7 @@ checkReadyQueue:
 	cmp r2 , #0        //compare is readyqueue zero
 	beq returnToOriginal //branch to return IF COUNT IS ZERO
 	bx lr
-
+/*
 contextSwitchingISR:
 	stmdb sp!,{r4-r11,lr} //push
 	bl 		checkReadyQueue //check is the ready queue null if null will jump to returnToOriginal
@@ -120,7 +122,7 @@ returnToOriginal:
 	//pop r4-r11 and lr
 	ldmia sp!,{r4-r11,lr}
 	bx lr   // return to lr address
-
+*/
 /*
 contextSwitchingISR:
 	stmdb sp!,{r4-r11,lr} //push
@@ -128,14 +130,14 @@ contextSwitchingISR:
 	// load sp into deQueueTCB->stackPTR
 	ldr r0,=deQueueTcb
 	ldr r1 , [r0]
-	str sp ,[r1,#8]
+	str sp ,[r1,#4]
 	//mov r1 ,sp
 	bl pushIntoTimerQueue
 	//load sp in tcb into pc sp
 	bl 		peepHeadTcb
 	ldr r0,=nextTcb      //r0 points to nextTcb address
 	ldr r1 , [r0]       // r1 has address of nextTcb
-	ldr r2 , [r1,#8]	// r2 has address in nextTcb+4
+	ldr r2 , [r1,#4]	// r2 has address in nextTcb+4
 	mov sp ,r2
 	//pop r4-r11 and lr
 	ldmia sp!,{r4-r11,lr}

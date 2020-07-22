@@ -15,9 +15,6 @@ typedef struct TimerEvent TimerEvent;
 struct TimerEvent {
 		TimerEvent * next;
 		int time;
-		int8_t * stackPtr;
-		int8_t * stackBaseAddr;
-		ThreadState threadState;
 		void * data;
 };
 

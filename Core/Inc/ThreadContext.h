@@ -37,11 +37,10 @@ struct ThreadContext {
 typedef struct Tcb Tcb;
 struct Tcb {
 	Tcb * next;
-	void * data;
 	int8_t * stackPtr;
 	int8_t * stackBaseAddr;
 	ThreadState threadState;
-	int comeFromTimerEvent;
+	char* name;
 };
 
 #endif /* INC_THREADCONTEXT_H_ */

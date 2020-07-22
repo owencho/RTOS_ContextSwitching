@@ -13,6 +13,6 @@
 
 void (*Task)(void);
 
-Tcb * tcbCreate(int mallocSize ,void (*Task)(void));
+Tcb * tcbCreate(int mallocNum ,void (*Task)(void),char * name );
 Tcb * tcbCreateMain(void);
 #endif /* INC_TCB_H_ */
