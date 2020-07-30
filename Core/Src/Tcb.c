@@ -30,9 +30,9 @@ Tcb * tcbCreate(int mallocNum ,void (*Task)(void),char * name ){
 	tc-> R10 = 0x1AAAAAAA;
 	tc-> R11= 0x1BBBBBBB;
 	tc-> R0 = 0x10000000;
-	tc-> R1 = 0x15555555;
-	tc-> R2 = 0x16666666;
-	tc-> R3 = 0x17777777;
+	tc-> R1 = 0x11111111;
+	tc-> R2 = 0x12222222;
+	tc-> R3 = 0x13333333;
 	tc-> R12 = 0x1CCCCCC;
 	tc-> returnAddress = (uint32_t)Task;
 	tc-> excReturn = 0xFFFFFFF9;

@@ -4,44 +4,67 @@
 #include "BaseAddress.h"
 #include "List.h"
 #include "ThreadContext.h"
-#include "TimerEventQueue.h"
-#include "TcbQueue.h"
 #include "Scb.h"
-TimerEvent * event;
-extern TimerEventQueue timerEventQueue;
-extern TcbQueue readyQueue;
+#include "Irq.h"
+
 volatile Tcb * nextTcb;
 volatile Tcb * deQueueTcb;
 int isWaitForEvent = 0;
-volatile int isEvent = 0;
-PostTcbHandler postTcbHandler = storeTcbInReadyQueue;
+int isEvent = 0;
+PostTcbHandler postTcbHandler = (PostTcbHandler)storeTcbInReadyQueue;
+void * dataForPostTcbHandler;
+extern TimerEventQueue timerEventQueue;
+extern TcbQueue readyQueue;
+
 void deQueueEnqueue(){
+	disableIRQ();
 	resetCurrentListItem((List*)&readyQueue);
 	deQueueTcb =(Tcb *) deleteHeadListItem((List*)&readyQueue);
+	enableIRQ();
 }
 
 void kernelSleep(TimerEvent* evt,int time){
-	peepHeadTcb();
-	evt->data =(void*)nextTcb;
+	disableIRQ();
 	evt->time = time;
-	event = evt;
 	isWaitForEvent = 0;
-	triggerContextSwitch(storeTcbInTimerQueue,event);
-
+	triggerContextSwitch((PostTcbHandler)storeTcbInTimerQueue,evt);
+	enableIRQ();
 }
 
-void storeTcbInReadyQueue(Tcb* tcb, TcbQueue *queue){
-	listAddItemToTail((List*)queue, (ListItem*)tcb);
+
+void storeTcbInReadyQueue(Tcb* tcb){
+	disableIRQ();
+	listAddItemToTail((List*)&readyQueue, (ListItem*)tcb);
+	enableIRQ();
 }
+
+void storeTcbInTimerQueue(Tcb* tcb){
+	disableIRQ();
+	TimerEvent * event = (TimerEvent*)dataForPostTcbHandler;
+	event->data = tcb;
+	listAddItemToTail((List*)&timerEventQueue, (ListItem*)event);
+	postTcbHandler = (PostTcbHandler)storeTcbInReadyQueue;
+	enableIRQ();
+}
+/*
+void storeTcbInBlockingQueue(Tcb* tcb){
+	listAddItemToTail((List*)dataForPostTcbHandler, (ListItem*)event);
+	postTcbHandler = (PostTcbHandler)storeTcbInReadyQueue;
+}
+*/
 
 void peepHeadTcb(){
+	disableIRQ();
 	resetCurrentListItem((List*)&readyQueue);
 	nextTcb =(Tcb *) getCurrentListItem((List*)&readyQueue);
+	enableIRQ();
 }
 
 void triggerContextSwitch(PostTcbHandler callback , void*data){
+	disableIRQ();
 	postTcbHandler = callback;
-	dataForPostTcbHandler = data;
+	dataForPostTcbHandler = data; //unkown data pass in when we need
 	scbSetPendSV();
+	enableIRQ();
 }
 

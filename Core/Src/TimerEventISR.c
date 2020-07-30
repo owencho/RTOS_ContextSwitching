@@ -37,7 +37,7 @@ void timerEventISR(TcbQueue * readyQueue,TimerEventQueue *timerEventQueue){
 void checkAndDequeueIfNextEventTimerIsZero(TcbQueue * readyQueue,TimerEventQueue *timerEventQueue){
 		TimerEvent * nextTimerEventItem;
 		resetCurrentTimerEventQueue(timerEventQueue);
-		nextTimerEventItem=timerEventQueueGetCurrentEvent(timerEventQueue);
+		nextTimerEventItem=(TimerEvent*)getCurrentListItem((List*)timerEventQueue);
 		while(nextTimerEventItem != NULL){
 				if(nextTimerEventItem->time == 0){
 						nextTimerEventItem =timerEventDequeue(timerEventQueue);

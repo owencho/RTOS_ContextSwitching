@@ -62,27 +62,42 @@ defined in linker script */
     .type  contextSwitchingISR, %function
 
 contextSwitchingISR:
-	stmdb sp!,{r4-r11,lr} //push
+	push {r4-r11,lr} //push
+	bl disableIRQ
 	ldr r4 ,=isWaitForEvent
-	cmp r4 , #1
+	ldr r5, [r4]
+	bl enableIRQ
+	cmp r5 , #1
 	beq checkReadyQueue
+	//if(!isWaitForEvent)
 	//put into respective queue
 	bl deQueueEnqueue
 	ldr r5,=deQueueTcb
 	ldr r6 , [r5]
 	str sp ,[r6,#4]
+
 	//call the task
+	ldr r4 ,=postTcbHandler
+	ldr r7 , [r4]
+	mov r0 ,r6
+	blx r7
 
 checkReadyQueue:
-	ldr r4 ,=isWaitForEvent
-	cmp r4 , #0
+	//compare is readyQueue zero
+	bl disableIRQ
+	ldr r4 ,=readyQueue
+	ldr r6 , [r4,#8]
+	bl enableIRQ
+	cmp r6 , #0
+	//if zero then call waitforEvent
 	beq callWaitForEvent
+	//call peepHead
 	bl peepHeadTcb
 	ldr r4,=nextTcb
 	ldr r5 , [r4]
 	ldr r6 , [r5,#4]
 	mov sp ,r6
-	ldmia sp!,{r4-r11,lr}
+	pop {r4-r11,lr}
 	bx lr
 
 callWaitForEvent:
@@ -96,29 +111,42 @@ callWaitForEvent:
 	push {r2} //push xpsr
 	push {r1} //push returnAdd
 	push {r0} //push lr
-	ldr r0,=0x10000000
-	ldr r1,=0x11111111
-	ldr r2,=0x12222222
-	ldr r3,=0x13333333
-	ldr r12,=0x1CCCCCC
+	// minus 20 then load execReturn
+	ldr r0,=0x10101010
+	ldr r1,=0x20202020
+	ldr r2,=0x30303030
+	ldr r3,=0x40404040
+	ldr r12,=0x12121212
 	push {r0,r1,r2,r3,r12} //push r0-r12
+	//chg r0 to lr //no need push pop
 	ldr r0 ,=0xFFFFFFF9  //push execReturn
 	push {r0}
 	pop {lr}
 	bx lr
 
 waitForEvent:
-	ldr r0 ,=isEvent
+	bl disableIRQ
+	ldr r6 ,=isEvent
+	ldr r5, [r6]
+	bl enableIRQ
 	wfe
-	cmp r0 , #0
+	cmp r5 , #0
 	beq waitForEvent
-	mov r0,#0
-	push {lr}
+	// set isEvent as zero
+	bl disableIRQ
+	mov r7, #0
+	str r7,[r6]
+	//set one for isWaitForEvent
+	ldr r6 ,=isWaitForEvent
+	mov r7, #1
+	str r7,[r6]
+	bl enableIRQ
+	//set Pendsv
 	bl scbSetPendSV
-	pop {lr}
+
 
 WaitToPendSV:
-	bl WaitToPendSV
+	b WaitToPendSV
 
 
 

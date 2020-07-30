@@ -25,6 +25,7 @@
 #include "Common.h"
 #include "BaseAddress.h"
 #include "List.h"
+#include "Irq.h"
 #include "Tcb.h"
 #include "Scb.h"
 #include "ThreadContext.h"
@@ -106,7 +107,7 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   /* USER CODE BEGIN 2 */
-  __disable_irq();
+  disableIRQ();
   enableGpioG();
   gpioSetMode(gpioG, PIN_13, GPIO_OUT);
   gpioSetPinSpeed(gpioG,PIN_13,HIGH_SPEED);
@@ -119,7 +120,7 @@ int main(void)
   tc2 = tcbCreate(1024 ,blinkFastLed ,"tc2");
   listAddItemToTail((List*)&readyQueue,(ListItem*)tcMain);
   listAddItemToTail((List*)&readyQueue,(ListItem*)tc1);
-  __enable_irq();
+  enableIRQ();
   /*
   //wk2
   volatile int val = add2Integers(45,10);
@@ -196,17 +197,17 @@ static void MX_GPIO_Init(void)
 void blinkFastLed(){
 	while(1){
 		gpioToggleBit(gpioG, PIN_13 );
-		kernelSleep(&evt,300);
+		kernelSleep(&evt,1);
 		gpioToggleBit(gpioG, PIN_13 );
-		kernelSleep(&evt,300);
+		kernelSleep(&evt,1);
 	}
 }
 void blinkSlowLed(){
 	while(1){
 		gpioToggleBit(gpioG, PIN_14 );
-		kernelSleep(&evt2,300);
+		kernelSleep(&evt2,2);
 		gpioToggleBit(gpioG, PIN_14 );
-		kernelSleep(&evt2,300);
+		kernelSleep(&evt2,2);
 	}
 }
 

@@ -31,7 +31,8 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN TD */
-
+extern PostTcbHandler postTcbHandler;
+extern void * dataForPostTcbHandler;
 /* USER CODE END TD */
 
 /* Private define ------------------------------------------------------------*/
@@ -173,7 +174,7 @@ void DebugMon_Handler(void)
 void PendSV_Handler(void)
 {
   /* USER CODE BEGIN PendSV_IRQn 0 */
-		contextSwitchingISR((QueueTask)timerEventEnqueue);
+		contextSwitchingISR();
   /* USER CODE END PendSV_IRQn 0 */
   /* USER CODE BEGIN PendSV_IRQn 1 */
 
