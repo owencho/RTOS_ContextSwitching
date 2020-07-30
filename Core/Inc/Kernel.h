@@ -1,10 +1,10 @@
 #ifndef KERNEL_H
 #define KERNEL_H
 #include "TimerEvent.h"
-typedef void (*QueueTask)(void* queue, void *event);
+#include "Tcb.h"
+typedef void (*PostTcbHandler)(Tcb* tcb, void *queue);
 void contextSwitchingISR(QueueTask task);
 void kernelSleep(TimerEvent* evt,int time);
 void deQueueEnqueue();
-void callWaitForEvent(void);
 void peepHeadTcb();
 #endif // KERNEL_H
