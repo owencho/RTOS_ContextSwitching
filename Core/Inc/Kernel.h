@@ -6,6 +6,7 @@
 #include "Tcb.h"
 #include "BlockingQueue.h"
 #include "Mutex.h"
+#include "Semaphore.h"
 
 typedef void (*PostTcbHandler)(void * tcb, void *queue);
 
@@ -15,9 +16,14 @@ void storeTcbInBlockingQueue(Tcb *tcb);
 void triggerContextSwitch(PostTcbHandler callback , void*data);
 
 void kernelSleep(TimerEvent* evt,int time);
-void setMutex(Mutex *mut);
+void initMutex(Mutex *mut);
 void acquireMutex(Mutex * mut);
 void releaseMutex(Mutex* mut);
+
+void initSemaphore(Semaphore* sema,int count);
+void semaphoreDown(Semaphore* sema,int count);
+void semaphoreUp(Semaphore* sema,int count);
+
 void deQueueEnqueue();
 Tcb * peepHeadTcb();
 #endif // KERNEL_H

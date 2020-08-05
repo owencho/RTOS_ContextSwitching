@@ -32,7 +32,7 @@ void kernelSleep(TimerEvent* evt,int time){
 	enableIRQ();
 }
 
-void setMutex(Mutex *mut){
+void initMutex(Mutex *mut){
 	mut->owner = NULL;
 	mut->count = 1;
 }
@@ -67,6 +67,37 @@ void releaseMutex(Mutex* mut){
 	listAddItemToTail((List*)&readyQueue, (ListItem*)deQueueMutexTcb);
 	mut->owner = NULL;
 	mut->count = 1;
+	enableIRQ();
+}
+
+void initSemaphore(Semaphore* sema,int count){
+	sema->count = count;
+}
+
+void semaphoreDown(Semaphore* sema,int count){
+	disableIRQ();
+	if(sema->count == 0){
+		triggerContextSwitch((PostTcbHandler)storeTcbInBlockingQueue,&sema->blockingQueue);
+	}
+	else{
+		sema->count=sema->count-count;
+		if(sema->count <0){
+			sema->count = 0;
+		}
+	}
+	enableIRQ();
+}
+
+void semaphoreUp(Semaphore* sema,int count){
+	disableIRQ();
+	Tcb * deQueueSemaTcb;
+	int i = 0;
+	deQueueSemaTcb = deleteHeadListItem((List*)&sema->blockingQueue);
+	while(deQueueSemaTcb != NULL && i < (count-1)){
+		listAddItemToTail((List*)&readyQueue, (ListItem*)deQueueSemaTcb);
+		deQueueSemaTcb = deleteHeadListItem((List*)&sema->blockingQueue);
+	}
+	sema->count = sema->count + count;
 	enableIRQ();
 }
 
