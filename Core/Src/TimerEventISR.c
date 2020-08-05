@@ -9,6 +9,7 @@
 #include "EventCompare.h"
 #include "Irq.h"
 #include "TimerEventISR.h"
+#include "AssemblyInstruction.h"
 
 TimerEvent * timerEventItem;
 TimerEvent * currentTimerEventItem;
@@ -27,7 +28,7 @@ void timerEventISR(TcbQueue * readyQueue,TimerEventQueue *timerEventQueue){
 	      		//eventEnqueue(eventQueue,(Event*)currentTimerEventItem);
 				resetTick(timerEventQueue);
 				isEvent = 1;
-				__asm("sev");
+				callSev();
      			checkAndDequeueIfNextEventTimerIsZero(readyQueue,timerEventQueue);
      		}
     }
@@ -41,8 +42,6 @@ void checkAndDequeueIfNextEventTimerIsZero(TcbQueue * readyQueue,TimerEventQueue
 		while(nextTimerEventItem != NULL){
 				if(nextTimerEventItem->time == 0){
 						nextTimerEventItem =timerEventDequeue(timerEventQueue);
-						//nextTimerEventItem->type = TIMEOUT_EVENT;
-						//eventEnqueue(eventQueue,(Event*)nextTimerEventItem);
 						listAddItemToTail((List*)readyQueue,(ListItem*)(nextTimerEventItem->data));
 				}
 				nextTimerEventItem=timerEventQueueGetCurrentEvent(timerEventQueue);

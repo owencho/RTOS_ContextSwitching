@@ -9,8 +9,8 @@
 
 volatile Tcb * nextTcb;
 volatile Tcb * deQueueTcb;
-int isWaitForEvent = 0;
-int isEvent = 0;
+volatile int isWaitForEvent = 0;
+volatile int isEvent = 0;
 PostTcbHandler postTcbHandler = (PostTcbHandler)storeTcbInReadyQueue;
 void * dataForPostTcbHandler;
 extern TimerEventQueue timerEventQueue;
@@ -42,7 +42,7 @@ void storeTcbInTimerQueue(Tcb* tcb){
 	disableIRQ();
 	TimerEvent * event = (TimerEvent*)dataForPostTcbHandler;
 	event->data = tcb;
-	listAddItemToTail((List*)&timerEventQueue, (ListItem*)event);
+	timerEventEnqueue(&timerEventQueue,event);
 	postTcbHandler = (PostTcbHandler)storeTcbInReadyQueue;
 	enableIRQ();
 }

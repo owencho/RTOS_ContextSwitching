@@ -63,6 +63,7 @@ defined in linker script */
 
 contextSwitchingISR:
 	push {r4-r11,lr} //push
+//////Compare isit from WFE
 	bl disableIRQ
 	ldr r4 ,=isWaitForEvent
 	ldr r5, [r4]
@@ -85,13 +86,21 @@ contextSwitchingISR:
 checkReadyQueue:
 	//compare is readyQueue zero
 	bl disableIRQ
+	//reset isWaitForEvent
+	ldr r6 ,=isWaitForEvent
+	mov r7, #0
+	str r7,[r6]
+
+	//checkReadyQueue
 	ldr r4 ,=readyQueue
 	ldr r6 , [r4,#8]
 	bl enableIRQ
 	cmp r6 , #0
+
 	//if zero then call waitforEvent
 	beq callWaitForEvent
-	//call peepHead
+
+	// else call peepHead for task switching
 	bl peepHeadTcb
 	ldr r4,=nextTcb
 	ldr r5 , [r4]
@@ -101,6 +110,16 @@ checkReadyQueue:
 	bx lr
 
 callWaitForEvent:
+	bl disableIRQ
+	//reset isEvent to 0
+	ldr r6 ,=isEvent
+	mov r7, #0
+	str r7,[r6]
+	//set 1 for isWaitForEvent
+	ldr r6 ,=isWaitForEvent
+	mov r7, #1
+	str r7,[r6]
+	// fake the stackptr
 	ldr r0,=tcMain
 	ldr r1,[r0]
 	ldr r2 , [r1,#4]
@@ -121,6 +140,7 @@ callWaitForEvent:
 	//chg r0 to lr //no need push pop
 	ldr r0 ,=0xFFFFFFF9  //push execReturn
 	push {r0}
+	bl enableIRQ
 	pop {lr}
 	bx lr
 
@@ -129,21 +149,19 @@ waitForEvent:
 	ldr r6 ,=isEvent
 	ldr r5, [r6]
 	bl enableIRQ
+	cmp r5 , #1
+	beq exitWaitForEvent
 	wfe
+	bl disableIRQ
+	ldr r6 ,=isEvent
+	ldr r5, [r6]
+	bl enableIRQ
 	cmp r5 , #0
 	beq waitForEvent
-	// set isEvent as zero
-	bl disableIRQ
-	mov r7, #0
-	str r7,[r6]
-	//set one for isWaitForEvent
-	ldr r6 ,=isWaitForEvent
-	mov r7, #1
-	str r7,[r6]
-	bl enableIRQ
+
+exitWaitForEvent:
 	//set Pendsv
 	bl scbSetPendSV
-
 
 WaitToPendSV:
 	b WaitToPendSV
@@ -232,7 +250,7 @@ g_pfnVectors:
   .word  SVC_Handler
   .word  DebugMon_Handler
   .word  0
-  .word  PendSV_Handler
+  .word  contextSwitchingISR
   .word  SysTick_Handler
   
   /* External Interrupts */

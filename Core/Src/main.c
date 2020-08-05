@@ -36,7 +36,8 @@
 volatile Tcb * tc2;
 volatile Tcb * tcMain;
 volatile Tcb * tc1;
-TimerEvent  evt ,evt2;
+TimerEvent  evt;
+TimerEvent evt2;
 
 volatile ThreadContext * thread1;
 volatile ThreadContext * deQueueThread;
@@ -196,18 +197,20 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 void blinkFastLed(){
 	while(1){
+		//green LED
 		gpioToggleBit(gpioG, PIN_13 );
-		kernelSleep(&evt,1);
+		kernelSleep(&evt,300);
 		gpioToggleBit(gpioG, PIN_13 );
-		kernelSleep(&evt,1);
+		kernelSleep(&evt,300);
 	}
 }
 void blinkSlowLed(){
 	while(1){
+		//red LED
 		gpioToggleBit(gpioG, PIN_14 );
-		kernelSleep(&evt2,2);
+		kernelSleep(&evt2,200);
 		gpioToggleBit(gpioG, PIN_14 );
-		kernelSleep(&evt2,2);
+		kernelSleep(&evt2,200);
 	}
 }
 
