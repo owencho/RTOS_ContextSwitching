@@ -31,13 +31,13 @@
 #include "ThreadContext.h"
 #include "TimerEvent.h"
 #include "Kernel.h"
+#include "Mutex.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 volatile Tcb * tc2;
 volatile Tcb * tcMain;
 volatile Tcb * tc1;
-TimerEvent  evt;
-TimerEvent evt2;
+TimerEvent  evt,evt2,evt3;
 
 volatile ThreadContext * thread1;
 volatile ThreadContext * deQueueThread;
@@ -65,6 +65,7 @@ void switchThreadContext();
 void pushIntoTimerQueue();
 void blinkSlowLed();
 void blinkFastLed();
+void blinkUSBLed();
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -115,12 +116,17 @@ int main(void)
   gpioSetMode(gpioG, PIN_14, GPIO_OUT);
   gpioSetPinSpeed(gpioG,PIN_14,HIGH_SPEED);
 
+  enableGpio(PORT_B);
+  gpioSetMode(gpioB, PIN_13, GPIO_OUT);
+  gpioSetPinSpeed(gpioG,PIN_13,HIGH_SPEED);
+
   //switchThreadContext();
   tcMain = tcbCreateMain();
   tc1 = tcbCreate(1024 ,blinkSlowLed ,"tc1");
-  tc2 = tcbCreate(1024 ,blinkFastLed ,"tc2");
+  tc2 = tcbCreate(1024 ,blinkUSBLed ,"tc2");
   listAddItemToTail((List*)&readyQueue,(ListItem*)tcMain);
   listAddItemToTail((List*)&readyQueue,(ListItem*)tc1);
+  listAddItemToTail((List*)&readyQueue,(ListItem*)tc2);
   enableIRQ();
   /*
   //wk2
@@ -211,6 +217,16 @@ void blinkSlowLed(){
 		kernelSleep(&evt2,200);
 		gpioToggleBit(gpioG, PIN_14 );
 		kernelSleep(&evt2,200);
+	}
+}
+
+void blinkUSBLed(){
+	while(1){
+		//red LED
+		gpioToggleBit(gpioB, PIN_13 );
+		kernelSleep(&evt3,200);
+		gpioToggleBit(gpioB, PIN_13 );
+		kernelSleep(&evt3,200);
 	}
 }
 
