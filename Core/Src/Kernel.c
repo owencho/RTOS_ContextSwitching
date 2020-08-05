@@ -31,10 +31,10 @@ void kernelSleep(TimerEvent* evt,int time){
 	triggerContextSwitch((PostTcbHandler)storeTcbInTimerQueue,evt);
 	enableIRQ();
 }
-void setMutex(Mutex *mut,BlockingQueue * queue){
+
+void setMutex(Mutex *mut){
 	mut->owner = NULL;
 	mut->count = 1;
-	mut->blockingQueue = queue;
 }
 
 void acquireMutex(Mutex* mut){
@@ -59,7 +59,7 @@ void releaseMutex(Mutex* mut){
 	disableIRQ();
 	Tcb * currentTcb = peepHeadTcb();
 	Tcb * deQueueMutexTcb;
-	if(currentTcb != mut->owner || mut->count==0){
+	if(currentTcb != mut->owner || mut->count != 0){
 		enableIRQ();
 		return;
 	}

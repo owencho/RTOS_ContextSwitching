@@ -9,7 +9,7 @@
 #define INC_MUTEX_H_
 
 #include "BlockingQueue.h"
-
+#include "Tcb.h"
 typedef struct Mutex Mutex;
 struct Mutex {
 	int count;

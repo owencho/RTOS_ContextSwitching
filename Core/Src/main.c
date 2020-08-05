@@ -31,6 +31,7 @@
 #include "ThreadContext.h"
 #include "TimerEvent.h"
 #include "Kernel.h"
+#include "BlockingQueue.h"
 #include "Mutex.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -38,7 +39,7 @@ volatile Tcb * tc2;
 volatile Tcb * tcMain;
 volatile Tcb * tc1;
 TimerEvent  evt,evt2,evt3;
-
+Mutex mut1;
 volatile ThreadContext * thread1;
 volatile ThreadContext * deQueueThread;
 /* USER CODE END Includes */
@@ -127,6 +128,9 @@ int main(void)
   listAddItemToTail((List*)&readyQueue,(ListItem*)tcMain);
   listAddItemToTail((List*)&readyQueue,(ListItem*)tc1);
   listAddItemToTail((List*)&readyQueue,(ListItem*)tc2);
+
+  setMutex(&mut1);
+
   enableIRQ();
   /*
   //wk2
@@ -204,29 +208,35 @@ static void MX_GPIO_Init(void)
 void blinkFastLed(){
 	while(1){
 		//green LED
+		acquireMutex(&mut1);
 		gpioToggleBit(gpioG, PIN_13 );
 		kernelSleep(&evt,300);
 		gpioToggleBit(gpioG, PIN_13 );
 		kernelSleep(&evt,300);
+		releaseMutex(&mut1);
 	}
 }
 void blinkSlowLed(){
 	while(1){
 		//red LED
+		acquireMutex(&mut1);
 		gpioToggleBit(gpioG, PIN_14 );
 		kernelSleep(&evt2,200);
 		gpioToggleBit(gpioG, PIN_14 );
 		kernelSleep(&evt2,200);
+		releaseMutex(&mut1);
 	}
 }
 
 void blinkUSBLed(){
 	while(1){
-		//red LED
+		//green USB LED
+		acquireMutex(&mut1);
 		gpioToggleBit(gpioB, PIN_13 );
 		kernelSleep(&evt3,200);
 		gpioToggleBit(gpioB, PIN_13 );
 		kernelSleep(&evt3,200);
+		releaseMutex(&mut1);
 	}
 }
 

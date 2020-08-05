@@ -15,8 +15,9 @@ void storeTcbInBlockingQueue(Tcb *tcb);
 void triggerContextSwitch(PostTcbHandler callback , void*data);
 
 void kernelSleep(TimerEvent* evt,int time);
-
+void setMutex(Mutex *mut);
 void acquireMutex(Mutex * mut);
+void releaseMutex(Mutex* mut);
 void deQueueEnqueue();
 Tcb * peepHeadTcb();
 #endif // KERNEL_H
