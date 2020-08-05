@@ -4,14 +4,19 @@
 #include "TimerEventQueue.h"
 #include "TcbQueue.h"
 #include "Tcb.h"
+#include "BlockingQueue.h"
+#include "Mutex.h"
 
 typedef void (*PostTcbHandler)(void * tcb, void *queue);
 
 void storeTcbInReadyQueue(Tcb* tcb);
 void storeTcbInTimerQueue(Tcb* tcb);
+void storeTcbInBlockingQueue(Tcb *tcb);
 void triggerContextSwitch(PostTcbHandler callback , void*data);
 
 void kernelSleep(TimerEvent* evt,int time);
+
+void acquireMutex(Mutex * mut);
 void deQueueEnqueue();
-void peepHeadTcb();
+Tcb * peepHeadTcb();
 #endif // KERNEL_H

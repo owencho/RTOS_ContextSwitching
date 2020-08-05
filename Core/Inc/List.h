@@ -20,7 +20,7 @@ ListItem *createListItem(void* data);
 ListItem * getCurrentListItem(List * linkedList);
 ListItem * getNextListItem(List * linkedList);
 List*  listAddItemToHead(List * linkedList, ListItem * listItem );
-List*  listAddItemToTail(List * linkedList, ListItem * listItem  );
+List*  listAddItemToTail(List * linkedList, ListItem * listItem );
 ListItem * findListItem(List * linkedList,void * listItemData,LinkedListCompare compare );
 List* listAddItemToNext(List * linkedList, ListItem * listItem,ListItem * newListItem);
 void * deleteHeadListItem(List * linkedList);

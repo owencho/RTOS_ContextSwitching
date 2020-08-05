@@ -10,7 +10,7 @@
 
 #include <stdint.h>
 #include <stddef.h>
-#include "ThreadContext.h"
+
 typedef struct TimerEvent TimerEvent;
 struct TimerEvent {
 		TimerEvent * next;

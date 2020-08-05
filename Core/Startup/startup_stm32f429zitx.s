@@ -102,9 +102,9 @@ checkReadyQueue:
 
 	// else call peepHead for task switching
 	bl peepHeadTcb
-	ldr r4,=nextTcb
-	ldr r5 , [r4]
-	ldr r6 , [r5,#4]
+	//ldr r4,=nextTcb
+	//ldr r5 , [r4]
+	ldr r6 , [r0,#4]  //r0= nextTcb
 	mov sp ,r6
 	pop {r4-r11,lr}
 	bx lr
