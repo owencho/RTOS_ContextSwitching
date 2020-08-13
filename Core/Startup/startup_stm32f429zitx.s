@@ -100,6 +100,10 @@ checkReadyQueue:
 	//if zero then call waitforEvent
 	beq callWaitForEvent
 
+	//set hasContextSwitch as 1
+	ldr r6 ,=hasContextSwitch
+	mov r7, #1
+	str r7,[r6]
 	// else call peepHead for task switching
 	bl peepHeadTcb
 	//ldr r4,=nextTcb

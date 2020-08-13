@@ -37,7 +37,6 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 volatile Tcb * tc2;
-volatile Tcb * tcMain;
 volatile Tcb * tc1;
 TimerEvent  evt,evt2,evt3;
 Mutex mut1;
@@ -124,10 +123,10 @@ int main(void)
   gpioSetPinSpeed(gpioG,PIN_13,HIGH_SPEED);
 
   //switchThreadContext();
-  tcMain = tcbCreateMain();
+
   tc1 = tcbCreate(1024 ,blinkSlowLed ,"tc1");
   tc2 = tcbCreate(1024 ,blinkUSBLed ,"tc2");
-  listAddItemToTail((List*)&readyQueue,(ListItem*)tcMain);
+  kernelInit();
   listAddItemToTail((List*)&readyQueue,(ListItem*)tc1);
   listAddItemToTail((List*)&readyQueue,(ListItem*)tc2);
 
@@ -207,7 +206,7 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-/*
+
 void blinkFastLed(){
 	while(1){
 		//green LED
@@ -217,6 +216,7 @@ void blinkFastLed(){
 		gpioToggleBit(gpioG, PIN_13 );
 		kernelSleep(&evt,300);
 		releaseMutex(&mut1);
+		kernelSleep(&evt,300);
 	}
 }
 void blinkSlowLed(){
@@ -228,6 +228,7 @@ void blinkSlowLed(){
 		gpioToggleBit(gpioG, PIN_14 );
 		kernelSleep(&evt2,200);
 		releaseMutex(&mut1);
+		kernelSleep(&evt2,200);
 	}
 }
 
@@ -240,9 +241,10 @@ void blinkUSBLed(){
 		gpioToggleBit(gpioB, PIN_13 );
 		kernelSleep(&evt3,200);
 		releaseMutex(&mut1);
+		kernelSleep(&evt3,200);
 	}
 }
-*/
+/*
 //signalling situation
 void blinkFastLed(){
 	while(1){
@@ -275,6 +277,7 @@ void blinkUSBLed(){
 		kernelSleep(&evt3,200);
 	}
 }
+*/
 /* USER CODE END 4 */
 
 /**

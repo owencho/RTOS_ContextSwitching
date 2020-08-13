@@ -17,5 +17,7 @@ struct Mutex {
 	BlockingQueue blockingQueue;
 };
 
+void initMutex(Mutex *mut);
+Mutex* mutexCreate();
 
 #endif /* INC_MUTEX_H_ */

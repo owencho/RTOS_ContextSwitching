@@ -12,10 +12,19 @@ volatile Tcb * nextTcb;
 volatile Tcb * deQueueTcb;
 volatile int isWaitForEvent = 0;
 volatile int isEvent = 0;
+volatile int hasContextSwitch;
 PostTcbHandler postTcbHandler = (PostTcbHandler)storeTcbInReadyQueue;
 void * dataForPostTcbHandler;
-extern TimerEventQueue timerEventQueue;
-extern TcbQueue readyQueue;
+volatile Tcb * tcMain;
+
+void kernelInit(){
+	  tcMain = tcbCreateMain();
+	  listAddItemToTail((List*)&readyQueue,(ListItem*)tcMain);
+	  //memAlloc
+	  //allowThread
+}
+
+void kernel
 
 void deQueueEnqueue(){
 	disableIRQ();
@@ -32,72 +41,83 @@ void kernelSleep(TimerEvent* evt,int time){
 	enableIRQ();
 }
 
-void initMutex(Mutex *mut){
-	mut->owner = NULL;
-	mut->count = 1;
-}
 
 void acquireMutex(Mutex* mut){
-	disableIRQ();
-	Tcb * currentTcb = peepHeadTcb();
-	if(currentTcb == mut->owner){
-		enableIRQ();
-		return;
+	while(1){
+		disableIRQ();
+		Tcb * currentTcb = peepHeadTcb();
+		if(currentTcb == mut->owner){
+			mut->count++;
+			enableIRQ();
+			return;
+		}
+		else if(mut->owner){
+			triggerContextSwitch((PostTcbHandler)storeTcbInBlockingQueue,&mut->blockingQueue);
+			enableIRQ();
+			while(!hasContextSwitch);
+		}
+		else{
+			mut->owner = currentTcb;
+			enableIRQ();
+			return;
+		}
 	}
-	else if(mut->count == 0){
-		triggerContextSwitch((PostTcbHandler)storeTcbInBlockingQueue,&mut->blockingQueue);
-	}
-	else{
-		mut->owner = currentTcb;
-		mut->count = 0 ;
-	}
-
-	enableIRQ();
 }
 
 void releaseMutex(Mutex* mut){
 	disableIRQ();
 	Tcb * currentTcb = peepHeadTcb();
 	Tcb * deQueueMutexTcb;
-	if(currentTcb != mut->owner || mut->count != 0){
-		enableIRQ();
-		return;
+	if(mut->count > 0){
+		mut->count --;
 	}
-	deQueueMutexTcb = deleteHeadListItem((List*)&mut->blockingQueue);
-	listAddItemToTail((List*)&readyQueue, (ListItem*)deQueueMutexTcb);
-	mut->owner = NULL;
-	mut->count = 1;
-	enableIRQ();
+	if(mut->count == 0){
+		if(currentTcb != mut->owner){
+			enableIRQ();
+			return;
+		}
+		deQueueMutexTcb = deleteHeadListItem((List*)&mut->blockingQueue);
+		listAddItemToTail((List*)&readyQueue, (ListItem*)deQueueMutexTcb);
+		mut->owner = NULL;
+		enableIRQ();
+	}
 }
 
-void initSemaphore(Semaphore* sema,int count){
-	sema->count = count;
-}
 
 void semaphoreDown(Semaphore* sema,int count){
-	disableIRQ();
-	if(sema->count == 0){
-		triggerContextSwitch((PostTcbHandler)storeTcbInBlockingQueue,&sema->blockingQueue);
-	}
-	else{
+	while(1){
+		disableIRQ();
 		sema->count=sema->count-count;
 		if(sema->count <0){
 			sema->count = 0;
 		}
+		if(sema->count == 0){
+			triggerContextSwitch((PostTcbHandler)storeTcbInBlockingQueue,&sema->blockingQueue);
+			enableIRQ();
+			while(!hasContextSwitch);
+		}
+		else{
+			enableIRQ();
+			return;
+		}
 	}
-	enableIRQ();
 }
 
 void semaphoreUp(Semaphore* sema,int count){
 	disableIRQ();
 	Tcb * deQueueSemaTcb;
 	int i = 0;
+	sema->count = sema->count + count;
+	if(sema->count <=0){
+		enableIRQ();
+		return;
+	}
 	deQueueSemaTcb = deleteHeadListItem((List*)&sema->blockingQueue);
 	while(deQueueSemaTcb != NULL && i < (count-1)){
 		listAddItemToTail((List*)&readyQueue, (ListItem*)deQueueSemaTcb);
 		deQueueSemaTcb = deleteHeadListItem((List*)&sema->blockingQueue);
 	}
-	sema->count = sema->count + count;
+
 	enableIRQ();
 }
 
@@ -135,6 +155,7 @@ Tcb * peepHeadTcb(){
 
 void triggerContextSwitch(PostTcbHandler callback , void*data){
 	disableIRQ();
+	hasContextSwitch = 0 ;
 	postTcbHandler = callback;
 	dataForPostTcbHandler = data; //unkown data pass in when we need
 	scbSetPendSV();

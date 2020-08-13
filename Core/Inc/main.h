@@ -33,8 +33,7 @@ extern "C" {
 #include "TimerEventQueue.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-TimerEventQueue timerEventQueue;
-TcbQueue readyQueue;
+
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/

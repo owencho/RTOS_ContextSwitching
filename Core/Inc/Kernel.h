@@ -8,19 +8,22 @@
 #include "Mutex.h"
 #include "Semaphore.h"
 
+TimerEventQueue timerEventQueue;
+TcbQueue readyQueue;
+
 typedef void (*PostTcbHandler)(void * tcb, void *queue);
 
 void storeTcbInReadyQueue(Tcb* tcb);
 void storeTcbInTimerQueue(Tcb* tcb);
 void storeTcbInBlockingQueue(Tcb *tcb);
+
 void triggerContextSwitch(PostTcbHandler callback , void*data);
 
 void kernelSleep(TimerEvent* evt,int time);
-void initMutex(Mutex *mut);
+
 void acquireMutex(Mutex * mut);
 void releaseMutex(Mutex* mut);
 
-void initSemaphore(Semaphore* sema,int count);
 void semaphoreDown(Semaphore* sema,int count);
 void semaphoreUp(Semaphore* sema,int count);
 

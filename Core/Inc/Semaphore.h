@@ -16,4 +16,6 @@ struct Semaphore {
 	BlockingQueue blockingQueue;
 };
 
+void initSemaphore(Semaphore* sema,int count);
+Semaphore* semaphoreCreate(int count);
 #endif /* INC_SEMAPHORE_H_ */
