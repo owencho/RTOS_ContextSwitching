@@ -13,6 +13,9 @@ TcbQueue readyQueue;
 
 typedef void (*PostTcbHandler)(void * tcb, void *queue);
 
+void kernelInit();
+void allowThreadContext();
+
 void storeTcbInReadyQueue(Tcb* tcb);
 void storeTcbInTimerQueue(Tcb* tcb);
 void storeTcbInBlockingQueue(Tcb *tcb);

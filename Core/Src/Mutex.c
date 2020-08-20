@@ -20,4 +20,5 @@ Mutex* mutexCreate(){
 void initMutex(Mutex *mut){
 	mut->owner = NULL;
 	mut->count = 1;
+	initBlockingQueue(&mut->blockingQueue);
 }

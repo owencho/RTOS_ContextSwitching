@@ -20,6 +20,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "Usart.h"
 #include "Scb.h"
 #include "stm32f4xx_it.h"
 #include "TimerEventISR.h"
@@ -47,6 +48,11 @@
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
 extern int hasContextSwitch;
+extern int allowTC;
+extern int usartTurn;
+extern char * messageToSend;
+extern UsartRegs * sharedUsart;
+int charCount = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -173,8 +179,10 @@ void DebugMon_Handler(void)
 void PendSV_Handler(void)
 {
   /* USER CODE BEGIN PendSV_IRQn 0 */
-  contextSwitchingISR();
-  hasContextSwitch = 1;
+  if(allowTC){
+	  contextSwitchingISR();
+	  hasContextSwitch = 1;
+  }
   /* USER CODE END PendSV_IRQn 0 */
   /* USER CODE BEGIN PendSV_IRQn 1 */
 
@@ -206,6 +214,19 @@ void SysTick_Handler(void)
 /******************************************************************************/
 
 /* USER CODE BEGIN 1 */
+void UART5_IRQHandler(void){
 
+	if(usartTurn){
+ 		   if(messageToSend[charCount] != '\0'){
+ 			   usartClearTcFlag(sharedUsart);
+			   usartSend(sharedUsart,messageToSend[charCount]);
+			   charCount = charCount + 1;
+		   }else{
+			   usartDisableInterrupt(sharedUsart,TRANS_COMPLETE);
+			   charCount = 0;
+			   usartTurn = 0;
+		   }
+	}
+}
 /* USER CODE END 1 */
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

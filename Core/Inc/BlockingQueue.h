@@ -23,4 +23,6 @@ struct BlockingQueue{
     BlockingEvent * current ;
 };
 
+void initBlockingQueue(BlockingQueue * queue);
+
 #endif /* INC_BLOCKINGQUEUE_H_ */

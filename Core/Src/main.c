@@ -28,6 +28,7 @@
 #include "Irq.h"
 #include "Tcb.h"
 #include "Scb.h"
+#include "Serial.h"
 #include "ThreadContext.h"
 #include "TimerEvent.h"
 #include "Kernel.h"
@@ -40,6 +41,7 @@ volatile Tcb * tc2;
 volatile Tcb * tc1;
 TimerEvent  evt,evt2,evt3;
 Mutex mut1;
+Mutex * libMutex;
 Semaphore sema1;
 volatile ThreadContext * thread1;
 volatile ThreadContext * deQueueThread;
@@ -122,7 +124,6 @@ int main(void)
   gpioSetMode(gpioB, PIN_13, GPIO_OUT);
   gpioSetPinSpeed(gpioG,PIN_13,HIGH_SPEED);
 
-  //switchThreadContext();
 
   tc1 = tcbCreate(1024 ,blinkSlowLed ,"tc1");
   tc2 = tcbCreate(1024 ,blinkUSBLed ,"tc2");
@@ -132,6 +133,7 @@ int main(void)
 
   initMutex(&mut1);
   initSemaphore(&sema1,0);
+  configureUart5();
   enableIRQ();
   /*
   //wk2
@@ -206,7 +208,7 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-
+/*
 void blinkFastLed(){
 	while(1){
 		//green LED
@@ -244,7 +246,8 @@ void blinkUSBLed(){
 		kernelSleep(&evt3,200);
 	}
 }
-/*
+*/
+
 //signalling situation
 void blinkFastLed(){
 	while(1){
@@ -262,6 +265,9 @@ void blinkSlowLed(){
 		gpioToggleBit(gpioG, PIN_14 );
 		kernelSleep(&evt2,200);
 		semaphoreDown(&sema1,1);
+		acquireMutex(libMutex);
+		serialSend(uart5,"sucessfully pass the semaphore for blinkSlowLED ");
+		releaseMutex(libMutex);
 		gpioToggleBit(gpioG, PIN_14 );
 		kernelSleep(&evt2,200);
 	}
@@ -273,11 +279,14 @@ void blinkUSBLed(){
 		gpioToggleBit(gpioB, PIN_13 );
 		kernelSleep(&evt3,200);
 		semaphoreDown(&sema1,1);
+		acquireMutex(libMutex);
+		serialSend(uart5,"sucessfully pass the semaphore for blinkUSBLed ");
+		releaseMutex(libMutex);
 		gpioToggleBit(gpioB, PIN_13 );
 		kernelSleep(&evt3,200);
 	}
 }
-*/
+
 /* USER CODE END 4 */
 
 /**

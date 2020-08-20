@@ -4,12 +4,14 @@
 #include "BaseAddress.h"
 #include "List.h"
 #include "ThreadContext.h"
+#include "MemAlloc.h"
 #include "Scb.h"
 #include "Irq.h"
 TimerEvent * timerEvent;
 BlockingEvent * blockingEvent;
 volatile Tcb * nextTcb;
 volatile Tcb * deQueueTcb;
+volatile int allowTC = 0;
 volatile int isWaitForEvent = 0;
 volatile int isEvent = 0;
 volatile int hasContextSwitch;
@@ -17,14 +19,19 @@ PostTcbHandler postTcbHandler = (PostTcbHandler)storeTcbInReadyQueue;
 void * dataForPostTcbHandler;
 volatile Tcb * tcMain;
 
+
 void kernelInit(){
 	  tcMain = tcbCreateMain();
 	  listAddItemToTail((List*)&readyQueue,(ListItem*)tcMain);
-	  //memAlloc
-	  //allowThread
+	  memAllocInit();
+	  allowThreadContext();
 }
 
-void kernel
+void allowThreadContext(){
+	disableIRQ();
+	allowTC = 1;
+	enableIRQ();
+}
 
 void deQueueEnqueue(){
 	disableIRQ();
