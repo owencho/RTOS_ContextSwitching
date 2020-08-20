@@ -215,12 +215,11 @@ void SysTick_Handler(void)
 
 /* USER CODE BEGIN 1 */
 void UART5_IRQHandler(void){
-
 	if(usartTurn){
  		   if(messageToSend[charCount] != '\0'){
  			   usartClearTcFlag(sharedUsart);
 			   usartSend(sharedUsart,messageToSend[charCount]);
-			   charCount = charCount + 1;
+ 			   charCount = charCount + 1;
 		   }else{
 			   usartDisableInterrupt(sharedUsart,TRANS_COMPLETE);
 			   charCount = 0;

@@ -12,8 +12,8 @@
 #include "Gpio.h"
 #include <stdio.h>
 #include <stdint.h>
-#include <malloc.h>
 #include <stdarg.h>
+#include <stdlib.h>
 
 volatile int usartTurn = 0;
 UsartRegs * sharedUsart;
@@ -67,6 +67,7 @@ void serialSend(UsartRegs * usart,char *message,...){
     freeMessage(buffer);
     enableIRQ();
 }
+
 
 void usartSendMessage(UsartRegs * usart,char *message){
 	usartEnableInterrupt(uart5,TRANS_COMPLETE);
