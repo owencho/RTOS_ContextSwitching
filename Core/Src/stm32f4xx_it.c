@@ -48,7 +48,7 @@
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN PV */
 extern int hasContextSwitch;
-extern int allowTC;
+extern int allowCS;
 extern int usartTurn;
 extern char * messageToSend;
 extern UsartRegs * sharedUsart;
@@ -179,7 +179,7 @@ void DebugMon_Handler(void)
 void PendSV_Handler(void)
 {
   /* USER CODE BEGIN PendSV_IRQn 0 */
-  if(allowTC){
+  if(allowCS){
 	  contextSwitchingISR();
 	  hasContextSwitch = 1;
   }

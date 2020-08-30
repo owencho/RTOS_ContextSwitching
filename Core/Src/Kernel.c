@@ -11,7 +11,7 @@ TimerEvent * timerEvent;
 BlockingEvent * blockingEvent;
 volatile Tcb * nextTcb;
 volatile Tcb * deQueueTcb;
-volatile int allowTC = 0;
+volatile int allowCS = 0;
 volatile int isWaitForEvent = 0;
 volatile int isEvent = 0;
 volatile int hasContextSwitch;
@@ -29,7 +29,7 @@ void kernelInit(){
 
 void allowThreadContext(){
 	disableIRQ();
-	allowTC = 1;
+	allowCS = 1;
 	enableIRQ();
 }
 
@@ -95,10 +95,8 @@ void semaphoreDown(Semaphore* sema,int count){
 	while(1){
 		disableIRQ();
 		sema->count=sema->count-count;
-		if(sema->count <0){
+		if(sema->count < 0){
 			sema->count = 0;
-		}
-		if(sema->count == 0){
 			triggerContextSwitch((PostTcbHandler)storeTcbInBlockingQueue,&sema->blockingQueue);
 			enableIRQ();
 			while(!hasContextSwitch);

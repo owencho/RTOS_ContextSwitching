@@ -208,7 +208,7 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-
+/*
 void blinkFastLed(){
 	while(1){
 		//green LED
@@ -256,9 +256,9 @@ void blinkUSBLed(){
 	}
 }
 
-
+*/
 //signalling situation
-/*
+
 void blinkFastLed(){
 	while(1){
 		//green LED
@@ -296,7 +296,7 @@ void blinkUSBLed(){
 		kernelSleep(&evt3,200);
 	}
 }
-*/
+
 /* USER CODE END 4 */
 
 /**
