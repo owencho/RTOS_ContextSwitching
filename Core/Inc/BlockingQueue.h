@@ -10,8 +10,8 @@
 
 typedef struct BlockingEvent BlockingEvent;
 struct BlockingEvent {
-		BlockingEvent * next;
-		void * data;
+	BlockingEvent * next;
+	void * data;
 };
 
 typedef struct BlockingQueue BlockingQueue ;
