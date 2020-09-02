@@ -212,6 +212,37 @@ static void MX_GPIO_Init(void)
 void blinkFastLed(){
 	while(1){
 		//green LED
+		gpioToggleBit(gpioG, PIN_13 );
+		kernelSleep(&evt,300);
+		gpioToggleBit(gpioG, PIN_13 );
+		kernelSleep(&evt,300);
+
+	}
+}
+void blinkSlowLed(){
+	while(1){
+		//red LED
+		gpioToggleBit(gpioG, PIN_14 );
+		kernelSleep(&evt2,200);
+		gpioToggleBit(gpioG, PIN_14 );
+		kernelSleep(&evt2,200);
+	}
+}
+
+void blinkUSBLed(){
+	while(1){
+		//green USB LED
+		gpioToggleBit(gpioB, PIN_13 );
+		kernelSleep(&evt3,100);
+		gpioToggleBit(gpioB, PIN_13 );
+		kernelSleep(&evt3,100);
+	}
+}
+*/
+/*
+void blinkFastLed(){
+	while(1){
+		//green LED
 		acquireMutex(&mut1);
 		gpioToggleBit(gpioG, PIN_13 );
 		kernelSleep(&evt,300);
@@ -221,7 +252,7 @@ void blinkFastLed(){
 		acquireMutex(libMutex);
 		serialSend(uart5,"pass mutex test for blinkFastLed  \r\n");
 		releaseMutex(libMutex);
-		kernelSleep(&evt,300);
+		scbSetPendSV();
 	}
 }
 void blinkSlowLed(){
@@ -236,7 +267,7 @@ void blinkSlowLed(){
 		acquireMutex(libMutex);
 		serialSend(uart5,"pass mutex test for blinkSlowLed  \r\n");
 		releaseMutex(libMutex);
-		kernelSleep(&evt2,200);
+		scbSetPendSV();
 	}
 }
 
@@ -252,7 +283,7 @@ void blinkUSBLed(){
 		acquireMutex(libMutex);
 		serialSend(uart5,"pass mutex test for blinkUSBLed  \r\n");
 		releaseMutex(libMutex);
-		kernelSleep(&evt3,200);
+		scbSetPendSV();
 	}
 }
 
@@ -262,6 +293,9 @@ void blinkUSBLed(){
 void blinkFastLed(){
 	while(1){
 		//green LED
+		acquireMutex(libMutex);
+		serialSend(uart5,"semaphore up on blinkFastLed \r\n");
+		releaseMutex(libMutex);
 		gpioToggleBit(gpioG, PIN_13 );
 		kernelSleep(&evt,300);
 		semaphoreUp(&sema1,2);
@@ -272,12 +306,12 @@ void blinkFastLed(){
 void blinkSlowLed(){
 	while(1){
 		//red LED
-		gpioToggleBit(gpioG, PIN_14 );
-		kernelSleep(&evt2,200);
 		semaphoreDown(&sema1,1);
 		acquireMutex(libMutex);
-		serialSend(uart5,"sucessfully pass the semaphore for blinkSlowLED \r\n");
+		serialSend(uart5,"sema Pass on blinkSlowLed \r\n");
 		releaseMutex(libMutex);
+		gpioToggleBit(gpioG, PIN_14 );
+		kernelSleep(&evt2,200);
 		gpioToggleBit(gpioG, PIN_14 );
 		kernelSleep(&evt2,200);
 	}
@@ -286,11 +320,11 @@ void blinkSlowLed(){
 void blinkUSBLed(){
 	while(1){
 		//green USB LED
+		semaphoreDown(&sema1,1);
 		gpioToggleBit(gpioB, PIN_13 );
 		kernelSleep(&evt3,200);
-		semaphoreDown(&sema1,1);
 		acquireMutex(libMutex);
-		serialSend(uart5,"sucessfully pass the semaphore for blinkUSBLed  \r\n");
+		serialSend(uart5,"sema Pass on blinkUSBLed \r\n");
 		releaseMutex(libMutex);
 		gpioToggleBit(gpioB, PIN_13 );
 		kernelSleep(&evt3,200);

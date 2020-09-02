@@ -70,8 +70,10 @@ void serialSend(UsartRegs * usart,char *message,...){
 
 
 void usartSendMessage(UsartRegs * usart,char *message){
-	usartEnableInterrupt(uart5,TRANS_COMPLETE);
-	sharedUsart = usart;
-	messageToSend =message;
-	usartTurn = 1;
+	if(!usartTurn){
+		usartEnableInterrupt(uart5,TRANS_COMPLETE);
+		sharedUsart = usart;
+		messageToSend =message;
+		usartTurn = 1;
+	}
 }
